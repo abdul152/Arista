@@ -1,0 +1,19 @@
+name: deploy-config
+on:
+  push:
+    branches: [main]
+    paths: ['configs/**']
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+    environment: lab-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Final dry-run on all devices
+        run: ./scripts/push.sh preview
+      - name: Deploy and save
+        run: ./scripts/push.sh deploy
+      - name: Smoke test (fabric still forwards)
+        run: |
+          docker exec clab-evpn-host1 ping -c 3 -W 2 10.10.10.3
+          docker exec clab-evpn-host2 ping -c 3 -W 2 10.20.20.4

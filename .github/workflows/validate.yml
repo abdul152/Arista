@@ -1,0 +1,21 @@
+name: validate-config
+on:
+  pull_request:
+    branches: [main]
+    paths: ['configs/**']
+jobs:
+  preview:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dry-run on the live lab (nothing is committed)
+        run: |
+          set -o pipefail
+          ./scripts/push.sh preview | tee preview.txt
+      - name: Publish the diff in the run summary
+        if: always()
+        run: |
+          echo '## Config diff (dry run)' >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~' >> "$GITHUB_STEP_SUMMARY"
+          cat preview.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~' >> "$GITHUB_STEP_SUMMARY"
